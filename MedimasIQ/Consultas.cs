@@ -146,22 +146,36 @@ namespace MedimasIQ
 
         }
 
-        public DataTable dt(String FechaInicial, String FechaFinal)
+        public String[] RegistroDetalle(String numeroFactura)
         {
-            DataTable Tabla = new DataTable();
+            IDataReader DataReader = null;
+            String[] Registros = new String[3];
             StringBuilder sb = new StringBuilder();
-            sb.Append("SELECT [GRUPOS ETAREOS QUINQUENAL] ");
-            sb.Append(",COUNT([GRUPOS ETAREOS QUINQUENAL]) AS CANTIDAD ");
-            sb.Append("FROM VIM_RIPS_CONSULTA_S02 ");
-            sb.Append("WHERE FECHA BETWEEN " + FechaInicial + " AND " + FechaFinal + " ");
-            sb.Append("AND DIAGNOSTICO LIKE 'A09X%' AND DOCUMENTO NOT LIKE 'X01%' GROUP BY [GRUPOS ETAREOS QUINQUENAL] ORDER BY [GRUPOS ETAREOS QUINQUENAL]");
+            sb.Append("DECLARE @FACTURA VARCHAR(6) = '" + numeroFactura + "'");
+            sb.Append("SELECT TOP 3 ");
+            sb.Append("'2'AS TIPO_REGISTRO ");
+            sb.Append(",REPLICATE('0', 10 - LEN(@FACTURA)) + @FACTURA AS NUMERO_FACTURA ");
+            sb.Append(",REPLICATE(' ',15) AS AUTORIZACION ");
+            sb.Append(",TDOC_PACIENTE AS TIPO_IDENTIFICACION ");
+            sb.Append(",REPLICATE('0', 12 - LEN(NDOC_PACIENTE)) + CONVERT(VARCHAR,NDOC_PACIENTE) AS NUMERO_IDENTIFICACION ");
+
+            sb.Append("FROM VIEW_IQ ");
+            sb.Append("WHERE NUMERO_FACTURA = @FACTURA");
 
             try
             {
                 oAccesDatos.Open();
-                Tabla = oAccesDatos.Dt(CommandType.Text, sb.ToString());
+                DataReader = oAccesDatos.ExecuteReader(CommandType.Text, sb.ToString());
 
-                return Tabla;
+                while (DataReader.Read())
+                {
+                    Registros[0] = DataReader["TIPO_REGISTRO"].ToString();
+                    Registros[1] = DataReader["NUMERO_FACTURA"].ToString();
+                    Registros[2] = DataReader["AUTORIZACION"].ToString();
+                }
+                DataReader.Close();
+                return Registros;
+
             }
             catch (Exception)
             {
@@ -172,6 +186,7 @@ namespace MedimasIQ
             {
                 oAccesDatos.Close();
             }
+
         }
 
         public String GetArticulos(String Tarifa)
@@ -206,6 +221,34 @@ namespace MedimasIQ
                 oAccesDatos.Close();
             }
 
+        }
+
+        public DataTable dt(String FechaInicial, String FechaFinal)
+        {
+            DataTable Tabla = new DataTable();
+            StringBuilder sb = new StringBuilder();
+            sb.Append("SELECT [GRUPOS ETAREOS QUINQUENAL] ");
+            sb.Append(",COUNT([GRUPOS ETAREOS QUINQUENAL]) AS CANTIDAD ");
+            sb.Append("FROM VIM_RIPS_CONSULTA_S02 ");
+            sb.Append("WHERE FECHA BETWEEN " + FechaInicial + " AND " + FechaFinal + " ");
+            sb.Append("AND DIAGNOSTICO LIKE 'A09X%' AND DOCUMENTO NOT LIKE 'X01%' GROUP BY [GRUPOS ETAREOS QUINQUENAL] ORDER BY [GRUPOS ETAREOS QUINQUENAL]");
+
+            try
+            {
+                oAccesDatos.Open();
+                Tabla = oAccesDatos.Dt(CommandType.Text, sb.ToString());
+
+                return Tabla;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            finally
+            {
+                oAccesDatos.Close();
+            }
         }
 
         public String GetDato(String FechaInicial, String FechaFinal, String Condicion)

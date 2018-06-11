@@ -25,6 +25,7 @@ namespace MedimasIQ
         Consulta oConsulta = new Consulta();
         String RegistroControl;
         String RegistroCabecera;
+        String[] RegistroDetalle = null;
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -47,10 +48,12 @@ namespace MedimasIQ
         private void btnGuardar_Click(object sender, EventArgs e)
         {
             SaveFileDialog sfd = new SaveFileDialog();
+            
 
             sfd.FileName = txtNIT.Text + txtConsecutivo.Text + ".txt";
             sfd.DefaultExt = "txt";
             sfd.Filter = "txt Files (*.txt)|*.txt";
+
 
             if (sfd.ShowDialog() == DialogResult.OK)
             {
@@ -59,9 +62,27 @@ namespace MedimasIQ
 
                     RegistroControl = oConsulta.RegistroControl("121181");
                     RegistroCabecera = oConsulta.RegistroCabecera("121181");
+                    RegistroDetalle = oConsulta.RegistroDetalle("121181");
 
                     sw.WriteLine(RegistroControl);
                     sw.WriteLine(RegistroCabecera);
+
+
+
+                   /*sw.WriteLine(
+                       RegistroDetalle[0].ToString() +
+                       RegistroDetalle[1].ToString()
+                            );
+                    */
+                    foreach (String Registro in RegistroDetalle)
+                    {
+                        sw.WriteLine(
+                            RegistroDetalle[0].ToString() +
+                            RegistroDetalle[1].ToString() +
+                            RegistroDetalle[2].ToString()
+                            );
+                    }
+                    
 
                 }
            
